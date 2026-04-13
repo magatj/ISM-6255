@@ -1,0 +1,1396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Profitability Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:          #f0f2f5;
+      --surface:     #ffffff;
+      --surface-2:   #f7f8fa;
+      --border:      #e2e6ea;
+      --border-dark: #c8cfd8;
+      --navy:        #1a2b4a;
+      --navy-mid:    #2c4066;
+      --blue:        #2563eb;
+      --blue-light:  #eff4ff;
+      --green:       #16a34a;
+      --green-light: #f0fdf4;
+      --red:         #dc2626;
+      --red-light:   #fef2f2;
+      --amber:       #d97706;
+      --amber-light: #fffbeb;
+      --teal:        #0891b2;
+      --text:        #1a2b4a;
+      --text-mid:    #4b5e78;
+      --text-muted:  #8896a8;
+      --text-faint:  #b8c4d0;
+    }
+
+    html, body {
+      height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', system-ui, sans-serif;
+      font-size: 13px;
+      overflow: hidden;
+    }
+
+    /* ── Layout ── */
+    .app {
+      display: grid;
+      grid-template-rows: 52px 44px auto 1fr;
+      grid-template-columns: 300px 1fr 460px;
+      height: 100vh;
+    }
+
+    /* ══════════════════════════════════
+       HEADER
+    ══════════════════════════════════ */
+    header {
+      grid-column: 1 / -1;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+      background: var(--navy);
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+    .app-wordmark {
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: #ffffff;
+      letter-spacing: 0.01em;
+    }
+    .app-wordmark span { color: #60a5fa; }
+    .divider-v {
+      width: 1px; height: 18px;
+      background: rgba(255,255,255,0.15);
+    }
+    .view-label {
+      font-size: 0.75rem;
+      font-weight: 500;
+      color: rgba(255,255,255,0.55);
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      font-size: 0.72rem;
+      color: rgba(255,255,255,0.45);
+    }
+    .period-pill {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 4px;
+      padding: 4px 12px;
+      color: rgba(255,255,255,0.7);
+      font-size: 0.72rem;
+      font-weight: 500;
+      cursor: pointer;
+    }
+    .period-pill select {
+      background: none;
+      border: none;
+      color: rgba(255,255,255,0.7);
+      font-size: 0.72rem;
+      font-family: inherit;
+      font-weight: 500;
+      cursor: pointer;
+      outline: none;
+      padding: 0;
+    }
+    .period-pill select option { background: #1a2b4a; color: #fff; }
+
+    .as-of {
+      font-size: 0.68rem;
+      color: rgba(255,255,255,0.35);
+    }
+
+    /* ══════════════════════════════════
+       SOLUTION STRIP
+    ══════════════════════════════════ */
+    .solution-strip {
+      grid-column: 1 / -1;
+      background: var(--navy);
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      padding: 10px 20px;
+      display: flex;
+      align-items: flex-start;
+      gap: 28px;
+    }
+    .sol-main { flex: 1; min-width: 0; }
+    .sol-eyebrow {
+      font-size: 0.62rem;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: #60a5fa;
+      margin-bottom: 3px;
+    }
+    .sol-headline {
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: #ffffff;
+      line-height: 1.3;
+      margin-bottom: 4px;
+    }
+    .sol-body {
+      font-size: 0.72rem;
+      color: rgba(255,255,255,0.55);
+      line-height: 1.5;
+      max-width: 680px;
+    }
+    .sol-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      margin-top: 7px;
+    }
+    .sol-pill {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.68rem;
+      font-weight: 500;
+      color: rgba(255,255,255,0.7);
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 4px;
+      padding: 4px 11px;
+      white-space: nowrap;
+    }
+    .sol-pill .pill-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .sol-divider {
+      width: 1px;
+      align-self: stretch;
+      background: rgba(255,255,255,0.1);
+      flex-shrink: 0;
+    }
+    .sol-differentiators {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      flex-shrink: 0;
+      width: 280px;
+    }
+    .sol-diff-item {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+    }
+    .sol-diff-icon {
+      width: 28px; height: 28px;
+      border-radius: 5px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.8rem;
+      flex-shrink: 0;
+    }
+    .sol-diff-text .dt-title {
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: rgba(255,255,255,0.85);
+      margin-bottom: 1px;
+    }
+    .sol-diff-text .dt-desc {
+      font-size: 0.65rem;
+      color: rgba(255,255,255,0.4);
+      line-height: 1.45;
+    }
+
+    /* ══════════════════════════════════
+       FILTER BAR
+    ══════════════════════════════════ */
+    .filter-bar {
+      grid-column: 1 / -1;
+      display: flex;
+      align-items: center;
+      gap: 0;
+      padding: 0 20px;
+      background: var(--navy-mid);
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .filter-bar::-webkit-scrollbar { display: none; }
+
+    .filter-label {
+      font-size: 0.65rem;
+      font-weight: 600;
+      color: rgba(255,255,255,0.35);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-right: 14px;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .filter-tab {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 0 16px;
+      height: 44px;
+      font-size: 0.72rem;
+      font-weight: 500;
+      color: rgba(255,255,255,0.5);
+      background: none;
+      border: none;
+      border-bottom: 2px solid transparent;
+      cursor: pointer;
+      white-space: nowrap;
+      font-family: inherit;
+      transition: color 0.15s, border-color 0.15s;
+      flex-shrink: 0;
+    }
+    .filter-tab:hover { color: rgba(255,255,255,0.8); }
+    .filter-tab.active {
+      color: #ffffff;
+      border-bottom-color: #60a5fa;
+    }
+    .filter-tab .dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    /* ══════════════════════════════════
+       PANELS
+    ══════════════════════════════════ */
+    .panel {
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    .panel:last-child { border-right: none; }
+
+    .panel-header {
+      padding: 14px 16px 12px;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .panel-title {
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--text-mid);
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+    }
+    .panel-subtitle {
+      font-size: 0.68rem;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    /* ══════════════════════════════════
+       LEFT — KPIs & Sparklines
+    ══════════════════════════════════ */
+    .left-panel {
+      background: var(--surface);
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: var(--border) transparent;
+    }
+
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1px;
+      background: var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+    .kpi-card {
+      background: var(--surface);
+      padding: 14px 16px;
+      position: relative;
+    }
+    .kpi-label {
+      font-size: 0.65rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      margin-bottom: 6px;
+    }
+    .kpi-value {
+      font-size: 1.35rem;
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1;
+      letter-spacing: -0.02em;
+    }
+    .kpi-delta {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      font-size: 0.65rem;
+      font-weight: 600;
+      margin-top: 5px;
+      padding: 2px 6px;
+      border-radius: 3px;
+    }
+    .delta-up   { background: var(--green-light); color: var(--green); }
+    .delta-down { background: var(--red-light);   color: var(--red); }
+    .delta-flat { background: var(--amber-light);  color: var(--amber); }
+    .kpi-sub {
+      font-size: 0.62rem;
+      color: var(--text-muted);
+      margin-top: 3px;
+    }
+    .kpi-accent {
+      position: absolute;
+      top: 0; left: 0;
+      width: 3px; height: 100%;
+    }
+
+    /* ── Sparklines ── */
+    .sub-header {
+      padding: 12px 16px 8px;
+      font-size: 0.65rem;
+      font-weight: 700;
+      color: var(--text-mid);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface-2);
+    }
+
+    .spark-list { padding: 0; }
+    .spark-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 9px 16px;
+      border-bottom: 1px solid var(--border);
+      transition: background 0.12s;
+    }
+    .spark-row:last-child { border-bottom: none; }
+    .spark-row:hover { background: var(--surface-2); }
+    .spark-info { flex: 1; min-width: 0; }
+    .spark-name {
+      font-size: 0.72rem;
+      font-weight: 500;
+      color: var(--text);
+    }
+    .spark-val {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 2px;
+    }
+    .spark-num {
+      font-size: 0.68rem;
+      font-weight: 600;
+      color: var(--text-mid);
+    }
+    .spark-chg {
+      font-size: 0.62rem;
+      font-weight: 600;
+    }
+    .chg-up   { color: var(--green); }
+    .chg-down { color: var(--red); }
+
+    /* ── Margin bars ── */
+    .margin-list { padding: 0 16px 14px; }
+    .margin-row {
+      display: grid;
+      grid-template-columns: 90px 1fr 40px;
+      align-items: center;
+      gap: 10px;
+      padding: 6px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .margin-row:last-child { border-bottom: none; }
+    .margin-label { font-size: 0.68rem; color: var(--text-mid); font-weight: 500; }
+    .bar-bg {
+      height: 7px;
+      background: var(--surface-2);
+      border-radius: 4px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+    .bar-fill {
+      height: 100%;
+      border-radius: 4px;
+      transition: width 0.9s cubic-bezier(.4,0,.2,1);
+    }
+    .margin-pct { font-size: 0.68rem; font-weight: 600; color: var(--text); text-align: right; }
+
+    /* ══════════════════════════════════
+       CENTER — Charts
+    ══════════════════════════════════ */
+    .center-panel { background: var(--surface); }
+
+    .chart-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .ct-title { font-size: 0.78rem; font-weight: 700; color: var(--text); }
+    .ct-sub   { font-size: 0.65rem; color: var(--text-muted); margin-top: 2px; }
+
+    .seg-group {
+      display: flex;
+      border: 1px solid var(--border-dark);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .seg {
+      font-size: 0.65rem;
+      font-weight: 600;
+      padding: 4px 11px;
+      background: var(--surface);
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      border-right: 1px solid var(--border-dark);
+      transition: background 0.12s, color 0.12s;
+      font-family: inherit;
+    }
+    .seg:last-child { border-right: none; }
+    .seg.active, .seg:hover {
+      background: var(--navy);
+      color: #fff;
+    }
+
+    .chart-area {
+      flex: 1;
+      padding: 14px 16px 10px;
+      min-height: 0;
+    }
+    .chart-area canvas { width: 100% !important; height: 100% !important; }
+
+    .mini-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      padding: 10px 16px 14px;
+      border-top: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .mini-box {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 12px 14px;
+    }
+    .mini-box .mb-label {
+      font-size: 0.65rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      margin-bottom: 8px;
+    }
+    .mini-box canvas { max-height: 90px; }
+
+    /* ══════════════════════════════════
+       RIGHT — Executive Summary
+    ══════════════════════════════════ */
+    .right-panel { background: var(--surface); }
+
+    .exec-header {
+      padding: 16px 18px 14px;
+      background: var(--navy);
+      flex-shrink: 0;
+    }
+    .exec-title {
+      font-size: 1rem;
+      font-weight: 700;
+      color: #ffffff;
+      letter-spacing: 0.01em;
+    }
+    .exec-meta {
+      font-size: 0.72rem;
+      color: rgba(255,255,255,0.45);
+      margin-top: 4px;
+    }
+    .exec-meta strong { color: rgba(255,255,255,0.7); font-weight: 500; }
+
+    .exec-feed {
+      flex: 1;
+      overflow-y: auto;
+      padding: 14px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      scrollbar-width: thin;
+      scrollbar-color: var(--border) transparent;
+    }
+
+    /* Comment entries */
+    .summary-block {
+      padding: 16px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .summary-block:last-child { border-bottom: none; }
+
+    .sb-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 7px;
+    }
+    .sb-title {
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--text);
+    }
+    .sb-badge {
+      font-size: 0.68rem;
+      font-weight: 600;
+      padding: 2px 10px;
+      border-radius: 3px;
+    }
+    .badge-pos   { background: var(--green-light); color: var(--green); }
+    .badge-neg   { background: var(--red-light);   color: var(--red); }
+    .badge-watch { background: var(--amber-light);  color: var(--amber); }
+    .badge-info  { background: var(--blue-light);  color: var(--blue); }
+
+    .sb-body {
+      font-size: 0.84rem;
+      color: var(--text-mid);
+      line-height: 1.65;
+      margin-bottom: 8px;
+    }
+    .sb-meta {
+      font-size: 0.70rem;
+      color: var(--text-faint);
+    }
+    .sb-meta strong { color: var(--text-muted); font-weight: 500; }
+
+    /* ── Note input ── */
+    .note-input-area {
+      padding: 14px 18px;
+      border-top: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .ni-row { display: flex; gap: 8px; align-items: flex-end; }
+    .note-ta {
+      flex: 1;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      color: var(--text);
+      font-family: inherit;
+      font-size: 0.82rem;
+      padding: 9px 12px;
+      resize: none;
+      outline: none;
+      transition: border-color 0.15s;
+      min-height: 56px;
+    }
+    .note-ta::placeholder { color: var(--text-faint); }
+    .note-ta:focus { border-color: var(--blue); }
+    .post-btn {
+      background: var(--navy);
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      padding: 0 14px;
+      height: 34px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+      white-space: nowrap;
+      transition: background 0.15s;
+      flex-shrink: 0;
+    }
+    .post-btn:hover { background: var(--blue); }
+    .type-sel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text-mid);
+      border-radius: 4px;
+      font-size: 0.68rem;
+      font-family: inherit;
+      padding: 0 4px;
+      outline: none;
+      width: 36px;
+      height: 22px;
+      cursor: pointer;
+    }
+    .ni-hint {
+      font-size: 0.6rem;
+      color: var(--text-faint);
+      margin-top: 5px;
+    }
+
+    /* ── Scrollbar ── */
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--border-dark); }
+  </style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ══════════════════════════════════
+       HEADER
+  ══════════════════════════════════ -->
+  <header>
+    <div class="header-left">
+      <div class="app-wordmark">Clarity<span>BI</span></div>
+      <div class="divider-v"></div>
+      <div>
+        <div class="view-label" style="font-size:1rem;font-weight:700;color:#ffffff;">Profitability Overview</div>
+        <div style="font-size:0.78rem;color:rgba(255,255,255,0.5);margin-top:2px;font-weight:400;">Project proposal &nbsp;·&nbsp; Harshini, Tyler &amp; Jesse</div>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="period-pill">
+        <svg width="12" height="12" viewBox="0 0 16 16" fill="none" style="opacity:.6">
+          <rect x="1" y="3" width="14" height="12" rx="2" stroke="currentColor" stroke-width="1.5"/>
+          <path d="M5 1v4M11 1v4M1 7h14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+        <select id="periodSelect">
+          <option>FY 2026</option>
+          <option>FY 2025</option>
+          <option>Q4 2026</option>
+          <option>Q3 2026</option>
+          <option>YTD 2026</option>
+        </select>
+      </div>
+      <span class="as-of">As of <span id="clock">—</span></span>
+    </div>
+  </header>
+
+  <!-- ══════════════════════════════════
+       FILTER BAR — Teams
+  ══════════════════════════════════ -->
+  <nav class="filter-bar">
+    <span class="filter-label">View by</span>
+    <button class="filter-tab active" data-team="all">
+      <span class="dot" style="background:#60a5fa"></span>All Business Units
+    </button>
+    <button class="filter-tab" data-team="finance">
+      <span class="dot" style="background:#34d399"></span>Finance
+    </button>
+    <button class="filter-tab" data-team="sales">
+      <span class="dot" style="background:#f59e0b"></span>Sales
+    </button>
+    <button class="filter-tab" data-team="operations">
+      <span class="dot" style="background:#a78bfa"></span>Operations
+    </button>
+    <button class="filter-tab" data-team="hr">
+      <span class="dot" style="background:#fb7185"></span>HR
+    </button>
+    <button class="filter-tab" data-team="it">
+      <span class="dot" style="background:#38bdf8"></span>IT
+    </button>
+    <button class="filter-tab" data-team="marketing">
+      <span class="dot" style="background:#f97316"></span>Marketing
+    </button>
+  </nav>
+
+  <!-- ══════════════════════════════════
+       SOLUTION STRIP
+  ══════════════════════════════════ -->
+  <div class="solution-strip">
+    <div class="sol-main">
+      <div class="sol-eyebrow">Solution Proposal</div>
+      <div class="sol-headline">Tableau-quality analytics with live, in-context collaboration</div>
+      <div class="sol-body">
+        Business intelligence tools give teams powerful charts — but the insight behind those charts lives in email threads, Slack messages, and meeting notes that no one can find later.
+        Our proposal is a dashboard experience that looks and feels like Tableau, but adds a structured <strong style="color:rgba(255,255,255,0.75);font-weight:600;">live comment layer</strong> directly alongside every chart.
+        Analysts, executives, and team leads annotate what they see in real time — flagging anomalies, recording decisions, and surfacing risks — so the data and the thinking about the data stay in one place, permanently.
+      </div>
+      <div class="sol-pills">
+        <span class="sol-pill"><span class="pill-dot" style="background:#60a5fa"></span>Tableau-grade visualisations</span>
+        <span class="sol-pill"><span class="pill-dot" style="background:#34d399"></span>Live chart annotations</span>
+        <span class="sol-pill"><span class="pill-dot" style="background:#f59e0b"></span>Executive summary layer</span>
+        <span class="sol-pill"><span class="pill-dot" style="background:#a78bfa"></span>Team-level filtering</span>
+        <span class="sol-pill"><span class="pill-dot" style="background:#fb7185"></span>Audit-ready commentary</span>
+        <span class="sol-pill"><span class="pill-dot" style="background:#38bdf8"></span>No context switching</span>
+      </div>
+    </div>
+
+    <div class="sol-divider"></div>
+
+    <div class="sol-differentiators">
+      <div class="sol-diff-item">
+        <div class="sol-diff-icon" style="background:rgba(96,165,250,0.15)">📊</div>
+        <div class="sol-diff-text">
+          <div class="dt-title">The gap Tableau doesn't fill</div>
+          <div class="dt-desc">Tableau surfaces what the data says. It doesn't capture why a number moved, what decision was made, or who flagged a risk — that context disappears.</div>
+        </div>
+      </div>
+      <div class="sol-diff-item">
+        <div class="sol-diff-icon" style="background:rgba(52,211,153,0.15)">💬</div>
+        <div class="sol-diff-text">
+          <div class="dt-title">Comments live next to the chart</div>
+          <div class="dt-desc">Every annotation is tied to a specific chart, time range, and team view. The right panel becomes a living executive summary — not a separate document.</div>
+        </div>
+      </div>
+      <div class="sol-diff-item">
+        <div class="sol-diff-icon" style="background:rgba(167,139,250,0.15)">🔒</div>
+        <div class="sol-diff-text">
+          <div class="dt-title">Decisions become institutional memory</div>
+          <div class="dt-desc">Tagged as findings, risks, or actions — comments are searchable, shareable, and persist across reporting periods so nothing is lost between reviews.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════
+       LEFT — KPIs & Margins
+  ══════════════════════════════════ -->
+  <aside class="panel left-panel">
+
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-accent" style="background:#2563eb"></div>
+        <div class="kpi-label">Revenue</div>
+        <div class="kpi-value" id="kpi-rev">$8.4M</div>
+        <div class="kpi-delta delta-up" id="kpi-rev-d">▲ 11.2%</div>
+        <div class="kpi-sub">vs. $7.6M prior period</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-accent" style="background:#16a34a"></div>
+        <div class="kpi-label">Gross Profit</div>
+        <div class="kpi-value" id="kpi-gp">$5.7M</div>
+        <div class="kpi-delta delta-up" id="kpi-gp-d">▲ 2.1 pp</div>
+        <div class="kpi-sub">67.3% gross margin</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-accent" style="background:#0891b2"></div>
+        <div class="kpi-label">Net Profit</div>
+        <div class="kpi-value" id="kpi-np">$1.9M</div>
+        <div class="kpi-delta delta-up" id="kpi-np-d">▲ 8.5%</div>
+        <div class="kpi-sub">22.6% net margin</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-accent" style="background:#d97706"></div>
+        <div class="kpi-label">EBITDA</div>
+        <div class="kpi-value" id="kpi-eb">$2.6M</div>
+        <div class="kpi-delta delta-up" id="kpi-eb-d">▲ 9.1%</div>
+        <div class="kpi-sub">30.9% EBITDA margin</div>
+      </div>
+    </div>
+
+    <div class="sub-header">Revenue by Department</div>
+
+    <div class="spark-list" id="sparks"></div>
+
+    <div class="sub-header">Profit Margin by Segment</div>
+
+    <div class="margin-list" id="margins"></div>
+
+  </aside>
+
+  <!-- ══════════════════════════════════
+       CENTER — Charts
+  ══════════════════════════════════ -->
+  <main class="panel center-panel">
+
+    <div class="chart-toolbar">
+      <div>
+        <div class="ct-title" id="chart-title">Revenue vs. Cost of Goods Sold — FY 2026</div>
+        <div class="ct-sub">Monthly actuals · shaded area = gross profit</div>
+      </div>
+      <div class="seg-group">
+        <button class="seg active">Monthly</button>
+        <button class="seg">Quarterly</button>
+        <button class="seg">Annual</button>
+      </div>
+    </div>
+
+    <div class="chart-area">
+      <canvas id="mainChart"></canvas>
+    </div>
+
+    <div class="mini-row">
+      <div class="mini-box">
+        <div class="mb-label">Gross Margin % by Month</div>
+        <canvas id="mc1"></canvas>
+      </div>
+      <div class="mini-box">
+        <div class="mb-label">Operating Expenses</div>
+        <canvas id="mc2"></canvas>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ══════════════════════════════════
+       RIGHT — Executive Summary
+  ══════════════════════════════════ -->
+  <aside class="panel right-panel">
+
+    <div class="exec-header">
+      <div class="exec-title">Executive Summary</div>
+      <div class="exec-meta">Live chart commentary · <strong id="exec-team-label">All Business Units</strong> · FY 2026</div>
+      <div style="margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.08);font-size:0.65rem;color:rgba(255,255,255,0.35);line-height:1.55;">
+        This panel is the core of the proposal — analysts annotate charts in real time. Each entry references a specific chart and persists as a permanent record of decisions and risks.
+      </div>
+    </div>
+
+    <div class="exec-feed" id="feed">
+      <!-- populated by JS based on active team -->
+    </div>
+
+    <div class="note-input-area">
+      <div class="ni-row">
+        <textarea
+          class="note-ta"
+          id="noteInput"
+          placeholder="Add a comment on the charts…"
+          rows="2"
+        ></textarea>
+        <button class="post-btn" id="postBtn">Post</button>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-top:6px;">
+        <select class="type-sel" id="typeSelect" style="width:auto;height:auto;padding:2px 6px;font-size:0.65rem;">
+          <option value="Finding">Finding</option>
+          <option value="Risk">Risk</option>
+          <option value="Action">Action</option>
+          <option value="Note">Note</option>
+        </select>
+        <span style="font-size:0.6rem;color:var(--text-faint);">Ctrl+Enter to post</span>
+      </div>
+    </div>
+
+  </aside>
+
+</div>
+
+<script>
+/* ═══════════════════════════════════
+   DATA BY TEAM
+═══════════════════════════════════ */
+const TEAMS = {
+  all: {
+    label: 'All Business Units',
+    kpi: { rev:'$8.4M', revD:'▲ 11.2%', revT:'up', gp:'$5.7M', gpD:'▲ 2.1 pp', gpT:'up', np:'$1.9M', npD:'▲ 8.5%', npT:'up', eb:'$2.6M', ebD:'▲ 9.1%', ebT:'up' },
+    sparkData: [
+      { name:'Sales',      val:'$3.1M', chg:'+14%', up:true,  color:'#2563eb' },
+      { name:'Operations', val:'$2.2M', chg:'+8%',  up:true,  color:'#0891b2' },
+      { name:'Finance',    val:'$1.4M', chg:'+5%',  up:true,  color:'#16a34a' },
+      { name:'Marketing',  val:'$0.9M', chg:'-3%',  up:false, color:'#d97706' },
+      { name:'IT',         val:'$0.5M', chg:'+2%',  up:true,  color:'#7c3aed' },
+      { name:'HR',         val:'$0.3M', chg:'-1%',  up:false, color:'#db2777' },
+    ],
+    margins: [
+      { label:'Sales',       pct:62, color:'#2563eb' },
+      { label:'Operations',  pct:71, color:'#0891b2' },
+      { label:'Finance',     pct:78, color:'#16a34a' },
+      { label:'Marketing',   pct:44, color:'#d97706' },
+      { label:'IT',          pct:55, color:'#7c3aed' },
+    ],
+    summary: [
+      { icon:'📈', iconBg:'#eff4ff', title:'Revenue Performance', badge:'On Track', badgeClass:'badge-pos',
+        ref:'Revenue vs. COGS — Full Year',
+        findings:['Revenue grew 11.2% YoY to $8.4M, ahead of the $8.0M annual target by 5%.','Sales and Operations are the primary growth drivers, contributing 63% of total revenue.'],
+        author:'CFO Office', date:'Dec 2026' },
+      { icon:'⚠️', iconBg:'#fffbeb', title:'Margin Pressure', badge:'Watch', badgeClass:'badge-watch',
+        ref:'Gross Margin % — Q3–Q4 trend',
+        findings:['Marketing margin contracted 8pp in H2, driven by a 22% increase in campaign spend that did not yield proportionate revenue lift.','Recommend a spend-efficiency review before Q1 budget is finalized.'],
+        author:'Finance', date:'Dec 2026' },
+      { icon:'✅', iconBg:'#f0fdf4', title:'Cost Discipline', badge:'Positive', badgeClass:'badge-pos',
+        ref:'Operating Expenses — monthly trend',
+        findings:['OpEx held flat at $5.1M despite 11% revenue growth, improving the operating leverage ratio to 0.61x.','IT infrastructure consolidation delivered $180K in savings against a $140K target.'],
+        author:'Operations', date:'Dec 2026' },
+      { icon:'🎯', iconBg:'#eff4ff', title:'Q1 Priorities', badge:'Action Required', badgeClass:'badge-info',
+        ref:'Net Profit — forward projection',
+        findings:['Sustain gross margin above 65% by renegotiating two supplier contracts due in February.','HR to present headcount plan by Jan 15 to model impact on Q1 net margin.'],
+        author:'Executive Team', date:'Dec 2026' },
+    ]
+  },
+  finance: {
+    label: 'Finance',
+    kpi: { rev:'$1.4M', revD:'▲ 5.3%', revT:'up', gp:'$1.1M', gpD:'▲ 1.2 pp', gpT:'up', np:'$620K', npD:'▲ 4.8%', npT:'up', eb:'$750K', ebD:'▲ 3.9%', ebT:'up' },
+    sparkData: [
+      { name:'Advisory',    val:'$520K', chg:'+9%',  up:true,  color:'#16a34a' },
+      { name:'Compliance',  val:'$410K', chg:'+3%',  up:true,  color:'#0891b2' },
+      { name:'Reporting',   val:'$290K', chg:'+2%',  up:true,  color:'#2563eb' },
+      { name:'Treasury',    val:'$180K', chg:'-4%',  up:false, color:'#d97706' },
+    ],
+    margins: [
+      { label:'Advisory',   pct:80, color:'#16a34a' },
+      { label:'Compliance', pct:74, color:'#0891b2' },
+      { label:'Reporting',  pct:68, color:'#2563eb' },
+      { label:'Treasury',   pct:52, color:'#d97706' },
+    ],
+    summary: [
+      { icon:'📊', iconBg:'#f0fdf4', title:'Finance Performance', badge:'On Track', badgeClass:'badge-pos',
+        ref:'Revenue vs. COGS — Finance unit',
+        findings:['Finance revenue grew 5.3% to $1.4M, led by advisory services which expanded its client base by 12%.','Cost-to-income ratio improved to 55.7% from 58.2% in FY 2025.'],
+        author:'CFO Office', date:'Dec 2026' },
+      { icon:'⚠️', iconBg:'#fffbeb', title:'Treasury Risk', badge:'Watch', badgeClass:'badge-watch',
+        ref:'Treasury — Q3–Q4 revenue decline',
+        findings:['Treasury revenue fell 4% in H2 due to lower transaction volumes as the company reduced FX hedging activity.','Consider whether current hedging policy aligns with the FY 2027 growth strategy.'],
+        author:'Treasury Lead', date:'Dec 2026' },
+    ]
+  },
+  sales: {
+    label: 'Sales',
+    kpi: { rev:'$3.1M', revD:'▲ 14.2%', revT:'up', gp:'$1.9M', gpD:'▲ 3.4 pp', gpT:'up', np:'$780K', npD:'▲ 11.1%', npT:'up', eb:'$960K', ebD:'▲ 12.3%', ebT:'up' },
+    sparkData: [
+      { name:'Enterprise',  val:'$1.4M', chg:'+18%', up:true,  color:'#f59e0b' },
+      { name:'Mid-Market',  val:'$980K', chg:'+12%', up:true,  color:'#2563eb' },
+      { name:'SMB',         val:'$520K', chg:'+8%',  up:true,  color:'#0891b2' },
+      { name:'Renewals',    val:'$200K', chg:'-2%',  up:false, color:'#d97706' },
+    ],
+    margins: [
+      { label:'Enterprise',  pct:74, color:'#f59e0b' },
+      { label:'Mid-Market',  pct:62, color:'#2563eb' },
+      { label:'SMB',         pct:48, color:'#0891b2' },
+      { label:'Renewals',    pct:88, color:'#16a34a' },
+    ],
+    summary: [
+      { icon:'🚀', iconBg:'#fffbeb', title:'Sales Growth', badge:'Exceeds Target', badgeClass:'badge-pos',
+        ref:'Revenue trend — Enterprise & Mid-Market',
+        findings:['Sales exceeded its $2.8M annual target by 10.7%. Enterprise segment was the standout, closing 3 new seven-figure contracts in Q4.','Win rate improved to 34% from 28% YoY, reflecting improved solution packaging.'],
+        author:'Sales Director', date:'Dec 2026' },
+      { icon:'⚠️', iconBg:'#fef2f2', title:'Renewal Risk', badge:'At Risk', badgeClass:'badge-neg',
+        ref:'Renewals — H2 decline',
+        findings:['Renewal revenue dipped 2% — two enterprise contracts worth a combined $85K are up for renewal in February with uncertain outcomes.','CS team to engage both accounts by Jan 10 with tailored retention proposals.'],
+        author:'Customer Success', date:'Dec 2026' },
+    ]
+  },
+  operations: {
+    label: 'Operations',
+    kpi: { rev:'$2.2M', revD:'▲ 8.1%', revT:'up', gp:'$1.6M', gpD:'▲ 1.8 pp', gpT:'up', np:'$510K', npD:'▲ 7.2%', npT:'up', eb:'$680K', ebD:'▲ 6.9%', ebT:'up' },
+    sparkData: [
+      { name:'Logistics',   val:'$890K', chg:'+10%', up:true,  color:'#a78bfa' },
+      { name:'Procurement', val:'$720K', chg:'+6%',  up:true,  color:'#0891b2' },
+      { name:'Facilities',  val:'$390K', chg:'+4%',  up:true,  color:'#2563eb' },
+      { name:'QA',          val:'$200K', chg:'-5%',  up:false, color:'#d97706' },
+    ],
+    margins: [
+      { label:'Logistics',   pct:77, color:'#a78bfa' },
+      { label:'Procurement', pct:69, color:'#0891b2' },
+      { label:'Facilities',  pct:58, color:'#2563eb' },
+      { label:'QA',          pct:45, color:'#d97706' },
+    ],
+    summary: [
+      { icon:'⚙️', iconBg:'#f5f3ff', title:'Operational Efficiency', badge:'On Track', badgeClass:'badge-pos',
+        ref:'Operating Expenses — full year',
+        findings:['Operations delivered $180K in cost savings through supplier renegotiations and route optimisation, exceeding the $140K target.','Logistics margin expanded to 77% after route consolidation reduced fuel costs by 9%.'],
+        author:'COO Office', date:'Dec 2026' },
+      { icon:'⚠️', iconBg:'#fffbeb', title:'QA Cost Overrun', badge:'Watch', badgeClass:'badge-watch',
+        ref:'QA — expense trend Q3–Q4',
+        findings:['QA costs increased 18% in H2 due to unplanned third-party audits following two product incidents.','Process improvements are in flight; expect normalisation in Q1.'],
+        author:'Operations', date:'Dec 2026' },
+    ]
+  },
+  hr: {
+    label: 'HR',
+    kpi: { rev:'$0.3M', revD:'▼ 1.2%', revT:'down', gp:'$220K', gpD:'▼ 0.8 pp', gpT:'down', np:'$90K', npD:'▼ 2.1%', npT:'down', eb:'$120K', ebD:'▼ 1.5%', ebT:'down' },
+    sparkData: [
+      { name:'Recruitment', val:'$120K', chg:'+5%',  up:true,  color:'#fb7185' },
+      { name:'L&D',         val:'$90K',  chg:'-8%',  up:false, color:'#d97706' },
+      { name:'Benefits',    val:'$60K',  chg:'-4%',  up:false, color:'#0891b2' },
+      { name:'Payroll Svc', val:'$30K',  chg:'+2%',  up:true,  color:'#16a34a' },
+    ],
+    margins: [
+      { label:'Recruitment', pct:58, color:'#fb7185' },
+      { label:'L&D',         pct:42, color:'#d97706' },
+      { label:'Benefits',    pct:35, color:'#0891b2' },
+      { label:'Payroll Svc', pct:71, color:'#16a34a' },
+    ],
+    summary: [
+      { icon:'👥', iconBg:'#fff1f2', title:'Headcount & Cost', badge:'Watch', badgeClass:'badge-watch',
+        ref:'HR Operating Expenses — FY 2026',
+        findings:['HR-related costs represent 14.2% of total OpEx, up from 13.1% in FY 2025, driven by a 6% increase in average compensation.','Current headcount of 142 FTEs is at the upper bound of the approved plan.'],
+        author:'CHRO Office', date:'Dec 2026' },
+      { icon:'📉', iconBg:'#fffbeb', title:'L&D Underspend', badge:'Action Required', badgeClass:'badge-info',
+        ref:'L&D budget utilisation',
+        findings:['Learning & Development budget was 18% underspent ($42K undeployed). Carry-forward requested for Q1 2025.','Recommend allocating underspend to leadership development ahead of Q2 restructuring.'],
+        author:'HR Business Partner', date:'Dec 2026' },
+    ]
+  },
+  it: {
+    label: 'IT',
+    kpi: { rev:'$0.5M', revD:'▲ 2.4%', revT:'up', gp:'$360K', gpD:'▲ 0.9 pp', gpT:'up', np:'$140K', npD:'▲ 1.8%', npT:'up', eb:'$190K', ebD:'▲ 2.2%', ebT:'up' },
+    sparkData: [
+      { name:'Infrastructure', val:'$210K', chg:'+4%',  up:true,  color:'#38bdf8' },
+      { name:'Software',       val:'$160K', chg:'+3%',  up:true,  color:'#7c3aed' },
+      { name:'Security',       val:'$90K',  chg:'+8%',  up:true,  color:'#16a34a' },
+      { name:'Support',        val:'$40K',  chg:'-6%',  up:false, color:'#d97706' },
+    ],
+    margins: [
+      { label:'Infrastructure', pct:66, color:'#38bdf8' },
+      { label:'Software',       pct:72, color:'#7c3aed' },
+      { label:'Security',       pct:80, color:'#16a34a' },
+      { label:'Support',        pct:38, color:'#d97706' },
+    ],
+    summary: [
+      { icon:'💻', iconBg:'#f0f9ff', title:'IT Cost Reduction', badge:'Positive', badgeClass:'badge-pos',
+        ref:'Operating Expenses — IT line items',
+        findings:['Infrastructure consolidation programme delivered $180K in savings against a $140K target, driven by data centre migration to cloud.','Security margin improved to 80% following insourcing of two previously contracted roles.'],
+        author:'CTO Office', date:'Dec 2026' },
+      { icon:'⚠️', iconBg:'#fffbeb', title:'Support Cost Pressure', badge:'Watch', badgeClass:'badge-watch',
+        ref:'IT Support — cost per ticket trend',
+        findings:['Support costs per ticket rose 12% as ticket volume increased with new product launches. Consider a self-service knowledge base investment in Q1.'],
+        author:'IT Director', date:'Dec 2026' },
+    ]
+  },
+  marketing: {
+    label: 'Marketing',
+    kpi: { rev:'$0.9M', revD:'▼ 3.1%', revT:'down', gp:'$400K', gpD:'▼ 4.2 pp', gpT:'down', np:'$110K', npD:'▼ 9.8%', npT:'down', eb:'$160K', ebD:'▼ 7.3%', ebT:'down' },
+    sparkData: [
+      { name:'Digital',    val:'$420K', chg:'+6%',  up:true,  color:'#f97316' },
+      { name:'Events',     val:'$280K', chg:'-12%', up:false, color:'#d97706' },
+      { name:'Brand',      val:'$140K', chg:'-5%',  up:false, color:'#0891b2' },
+      { name:'Partner',    val:'$60K',  chg:'+2%',  up:true,  color:'#16a34a' },
+    ],
+    margins: [
+      { label:'Digital',  pct:53, color:'#f97316' },
+      { label:'Events',   pct:28, color:'#d97706' },
+      { label:'Brand',    pct:41, color:'#0891b2' },
+      { label:'Partner',  pct:72, color:'#16a34a' },
+    ],
+    summary: [
+      { icon:'📉', iconBg:'#fff7ed', title:'Margin Contraction', badge:'At Risk', badgeClass:'badge-neg',
+        ref:'Gross Margin % — Marketing segment',
+        findings:['Marketing gross margin fell to 44% from 52% in FY 2025. A 22% increase in campaign spend in H2 did not generate proportionate pipeline growth.','ROI on event spend was 1.4x against a 2.5x target. Event programme needs a fundamental review.'],
+        author:'CMO Office', date:'Dec 2026' },
+      { icon:'✅', iconBg:'#fff7ed', title:'Digital Bright Spot', badge:'Positive', badgeClass:'badge-pos',
+        ref:'Digital revenue — full year trend',
+        findings:['Digital revenue grew 6% despite overall Marketing headwinds. SEO and paid search programmes contributed $130K of incremental revenue in H2.','Recommend reallocating 15–20% of events budget to digital in FY 2027 plan.'],
+        author:'Digital Lead', date:'Dec 2026' },
+      { icon:'🎯', iconBg:'#fef2f2', title:'FY 2027 Reset Needed', badge:'Action Required', badgeClass:'badge-info',
+        ref:'Marketing spend vs. pipeline contribution',
+        findings:['Marketing must present a revised budget and attribution model to the board by Jan 31. Current spend levels are not sustainable at this margin.'],
+        author:'Executive Team', date:'Dec 2026' },
+    ]
+  },
+};
+
+/* ═══════════════════════════════════
+   CLOCK
+═══════════════════════════════════ */
+function tick() {
+  const now = new Date();
+  document.getElementById('clock').textContent =
+    now.toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' });
+}
+tick();
+
+/* ═══════════════════════════════════
+   SPARKLINES
+═══════════════════════════════════ */
+function makeSpark(data, color, w=110, h=34) {
+  const min = Math.min(...data), max = Math.max(...data);
+  const range = max - min || 1;
+  const pts = data.map((v, i) => {
+    const x = (i / (data.length - 1)) * w;
+    const y = h - 3 - ((v - min) / range) * (h - 8);
+    return `${x.toFixed(1)},${y.toFixed(1)}`;
+  });
+  const uid = Math.random().toString(36).slice(2);
+  return `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" style="flex-shrink:0">
+    <defs>
+      <linearGradient id="g${uid}" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="${color}" stop-opacity="0.2"/>
+        <stop offset="100%" stop-color="${color}" stop-opacity="0"/>
+      </linearGradient>
+    </defs>
+    <path d="M0,${h} L${pts.join(' L')} L${w},${h} Z" fill="url(#g${uid})"/>
+    <polyline points="${pts.join(' ')}" fill="none" stroke="${color}"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+  </svg>`;
+}
+
+function rand(n, lo, hi) {
+  return Array.from({ length: n }, () => lo + Math.random() * (hi - lo));
+}
+
+/* ═══════════════════════════════════
+   RENDER TEAM DATA
+═══════════════════════════════════ */
+let mainChartInst, mc1Inst, mc2Inst;
+
+function renderTeam(teamKey) {
+  const d = TEAMS[teamKey];
+
+  /* KPIs */
+  document.getElementById('kpi-rev').textContent  = d.kpi.rev;
+  document.getElementById('kpi-gp').textContent   = d.kpi.gp;
+  document.getElementById('kpi-np').textContent   = d.kpi.np;
+  document.getElementById('kpi-eb').textContent   = d.kpi.eb;
+
+  const setDelta = (id, text, dir) => {
+    const el = document.getElementById(id);
+    el.textContent = text;
+    el.className = 'kpi-delta ' + (dir === 'up' ? 'delta-up' : dir === 'down' ? 'delta-down' : 'delta-flat');
+  };
+  setDelta('kpi-rev-d', d.kpi.revD, d.kpi.revT);
+  setDelta('kpi-gp-d',  d.kpi.gpD,  d.kpi.gpT);
+  setDelta('kpi-np-d',  d.kpi.npD,  d.kpi.npT);
+  setDelta('kpi-eb-d',  d.kpi.ebD,  d.kpi.ebT);
+
+  /* Sparklines */
+  const sparksEl = document.getElementById('sparks');
+  sparksEl.innerHTML = '';
+  d.sparkData.forEach(s => {
+    const row = document.createElement('div');
+    row.className = 'spark-row';
+    row.innerHTML = `
+      <div class="spark-info">
+        <div class="spark-name">${s.name}</div>
+        <div class="spark-val">
+          <span class="spark-num">${s.val}</span>
+          <span class="spark-chg ${s.up ? 'chg-up' : 'chg-down'}">${s.chg}</span>
+        </div>
+      </div>
+      ${makeSpark(rand(18, 0.4, 1.0), s.color)}`;
+    sparksEl.appendChild(row);
+  });
+
+  /* Margin bars */
+  const marginsEl = document.getElementById('margins');
+  marginsEl.innerHTML = '';
+  d.margins.forEach(m => {
+    const row = document.createElement('div');
+    row.className = 'margin-row';
+    row.innerHTML = `
+      <div class="margin-label">${m.label}</div>
+      <div class="bar-bg">
+        <div class="bar-fill" style="width:0%; background:${m.color}" data-target="${m.pct}"></div>
+      </div>
+      <div class="margin-pct">${m.pct}%</div>`;
+    marginsEl.appendChild(row);
+  });
+  setTimeout(() => {
+    marginsEl.querySelectorAll('.bar-fill').forEach(el => {
+      el.style.width = el.dataset.target + '%';
+    });
+  }, 80);
+
+  /* Executive Summary */
+  document.getElementById('exec-team-label').textContent = d.label;
+  const feed = document.getElementById('feed');
+  feed.innerHTML = '';
+  d.summary.forEach(s => {
+    const block = document.createElement('div');
+    block.className = 'summary-block';
+    block.innerHTML = `
+      <div class="sb-top">
+        <span class="sb-title">${s.title}</span>
+        <span class="sb-badge ${s.badgeClass}">${s.badge}</span>
+      </div>
+      <div class="sb-body">${s.findings.join(' ')}</div>
+      <div class="sb-meta"><strong>${s.author}</strong> · ${s.date}</div>`;
+    feed.appendChild(block);
+  });
+
+  /* Charts */
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const revenue = rand(12, 550, 950);
+  const cogs    = revenue.map(v => v * (0.28 + Math.random() * 0.12));
+  const margin  = revenue.map((v, i) => +((v - cogs[i]) / v * 100).toFixed(1));
+  const opex    = rand(12, 320, 520);
+
+  if (mainChartInst) mainChartInst.destroy();
+  mainChartInst = new Chart(document.getElementById('mainChart'), {
+    type: 'line',
+    data: {
+      labels: months,
+      datasets: [
+        {
+          label: 'Revenue',
+          data: revenue,
+          borderColor: '#2563eb',
+          backgroundColor: 'rgba(37,99,235,0.07)',
+          fill: '+1',
+          tension: 0.35,
+          pointRadius: 3,
+          pointHoverRadius: 6,
+          pointBackgroundColor: '#2563eb',
+          pointBorderColor: '#fff',
+          pointBorderWidth: 1.5,
+          borderWidth: 2,
+        },
+        {
+          label: 'Cost of Goods Sold',
+          data: cogs,
+          borderColor: '#dc2626',
+          backgroundColor: 'transparent',
+          fill: false,
+          tension: 0.35,
+          pointRadius: 2,
+          pointHoverRadius: 5,
+          pointBackgroundColor: '#dc2626',
+          pointBorderColor: '#fff',
+          pointBorderWidth: 1.5,
+          borderWidth: 1.5,
+          borderDash: [5, 4],
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      animation: { duration: 500 },
+      plugins: {
+        legend: {
+          display: true, position: 'top', align: 'end',
+          labels: { color:'#4b5e78', font:{family:'Inter',size:11}, usePointStyle:true, pointStyleWidth:14, boxHeight:2, padding:16 }
+        },
+        tooltip: {
+          backgroundColor:'#1a2b4a', borderColor:'#2d4a6a', borderWidth:1,
+          titleColor:'#fff', bodyColor:'#94a3b8',
+          titleFont:{family:'Inter',size:11,weight:'600'},
+          bodyFont:{family:'Inter',size:10}, padding:10,
+          callbacks: { label: ctx => ` ${ctx.dataset.label}: $${ctx.parsed.y.toFixed(0)}K` }
+        }
+      },
+      scales: {
+        x: { grid:{color:'#e2e6ea'}, ticks:{color:'#8896a8',font:{family:'Inter',size:10}} },
+        y: { grid:{color:'#e2e6ea'}, ticks:{color:'#8896a8',font:{family:'Inter',size:10}, callback: v => `$${v}K`} }
+      }
+    }
+  });
+
+  if (mc1Inst) mc1Inst.destroy();
+  mc1Inst = new Chart(document.getElementById('mc1'), {
+    type: 'bar',
+    data: {
+      labels: months,
+      datasets: [{
+        data: margin,
+        backgroundColor: margin.map(v => v > 65 ? 'rgba(22,163,74,0.65)' : v > 55 ? 'rgba(37,99,235,0.55)' : 'rgba(217,119,6,0.55)'),
+        borderRadius: 2, borderSkipped: false,
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend:{display:false}, tooltip:{
+        backgroundColor:'#1a2b4a', titleColor:'#fff', bodyColor:'#94a3b8',
+        titleFont:{family:'Inter',size:10}, bodyFont:{family:'Inter',size:10},
+        callbacks:{ label: ctx => ` ${ctx.parsed.y.toFixed(1)}%` }
+      }},
+      scales: {
+        x: { grid:{display:false}, ticks:{color:'#8896a8',font:{family:'Inter',size:9}} },
+        y: { grid:{color:'#e2e6ea'}, ticks:{color:'#8896a8',font:{family:'Inter',size:9}, callback:v=>`${v}%`} }
+      }
+    }
+  });
+
+  if (mc2Inst) mc2Inst.destroy();
+  mc2Inst = new Chart(document.getElementById('mc2'), {
+    type: 'line',
+    data: {
+      labels: months,
+      datasets: [{
+        data: opex,
+        borderColor: '#d97706',
+        backgroundColor: 'rgba(217,119,6,0.08)',
+        fill: true, tension: 0.38,
+        pointRadius: 0, borderWidth: 1.5,
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend:{display:false}, tooltip:{
+        backgroundColor:'#1a2b4a', titleColor:'#fff', bodyColor:'#94a3b8',
+        titleFont:{family:'Inter',size:10}, bodyFont:{family:'Inter',size:10},
+        callbacks:{ label: ctx => ` $${ctx.parsed.y.toFixed(0)}K` }
+      }},
+      scales: {
+        x: { grid:{display:false}, ticks:{color:'#8896a8',font:{family:'Inter',size:9}} },
+        y: { grid:{color:'#e2e6ea'}, ticks:{color:'#8896a8',font:{family:'Inter',size:9}, callback:v=>`$${v}K`} }
+      }
+    }
+  });
+}
+
+/* ═══════════════════════════════════
+   FILTER TABS
+═══════════════════════════════════ */
+document.querySelectorAll('.filter-tab').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.filter-tab').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    renderTeam(btn.dataset.team);
+  });
+});
+
+/* ═══════════════════════════════════
+   CHART PERIOD TABS
+═══════════════════════════════════ */
+document.querySelectorAll('.seg').forEach(s => {
+  s.addEventListener('click', () => {
+    document.querySelectorAll('.seg').forEach(x => x.classList.remove('active'));
+    s.classList.add('active');
+  });
+});
+
+/* ═══════════════════════════════════
+   POST TO EXEC SUMMARY
+═══════════════════════════════════ */
+const typeConfig = {
+  Finding: { badge:'Finding',  cls:'badge-info', icon:'📋', bg:'#eff4ff' },
+  Risk:    { badge:'Risk',     cls:'badge-neg',  icon:'⚠️',  bg:'#fff7ed' },
+  Action:  { badge:'Action',   cls:'badge-watch',icon:'🎯',  bg:'#fffbeb' },
+  Note:    { badge:'Note',     cls:'badge-pos',  icon:'📝',  bg:'#f0fdf4' },
+};
+
+function postNote() {
+  const ta   = document.getElementById('noteInput');
+  const type = document.getElementById('typeSelect').value;
+  const txt  = ta.value.trim();
+  if (!txt) return;
+  const cfg  = typeConfig[type];
+  const now  = new Date();
+  const date = now.toLocaleDateString('en-GB', { month:'short', year:'numeric' });
+
+  const block = document.createElement('div');
+  block.className = 'summary-block';
+  block.innerHTML = `
+    <div class="sb-top">
+      <span class="sb-title">${type}</span>
+      <span class="sb-badge ${cfg.cls}">${cfg.badge}</span>
+    </div>
+    <div class="sb-body">${txt.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div>
+    <div class="sb-meta"><strong>You</strong> · ${date}</div>`;
+
+  const feed = document.getElementById('feed');
+  feed.insertBefore(block, feed.firstChild);
+  feed.scrollTop = 0;
+  ta.value = '';
+}
+
+document.getElementById('postBtn').addEventListener('click', postNote);
+document.getElementById('noteInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) postNote();
+});
+
+/* ═══════════════════════════════════
+   INIT
+═══════════════════════════════════ */
+renderTeam('all');
+</script>
+</body>
+</html>

@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Star Schema ERD — Profitability Dashboard</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --navy:       #1a2b4a;
+      --navy-mid:   #2c4066;
+      --blue:       #2563eb;
+      --blue-dim:   #eff4ff;
+      --amber:      #d97706;
+      --amber-dim:  #fffbeb;
+      --green:      #16a34a;
+      --green-dim:  #f0fdf4;
+      --purple:     #7c3aed;
+      --purple-dim: #f5f3ff;
+      --border:     #e2e6ea;
+      --text:       #1a2b4a;
+      --text-mid:   #4b5e78;
+      --text-muted: #8896a8;
+      --bg:         #f0f2f5;
+      --surface:    #ffffff;
+    }
+
+    html, body {
+      background: var(--bg);
+      font-family: 'Inter', system-ui, sans-serif;
+      color: var(--text);
+      font-size: 12px;
+    }
+
+    /* ── Page shell ── */
+    .page {
+      max-width: 1300px;
+      margin: 0 auto;
+      padding: 28px 24px 48px;
+    }
+
+    /* ── Page header ── */
+    .page-header {
+      background: var(--navy);
+      border-radius: 6px;
+      padding: 22px 28px;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+    }
+    .ph-title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: 0.01em;
+    }
+    .ph-sub {
+      font-size: 0.72rem;
+      color: rgba(255,255,255,0.45);
+      margin-top: 4px;
+    }
+    .ph-sub strong { color: rgba(255,255,255,0.65); font-weight: 500; }
+    .ph-badge {
+      font-size: 0.65rem;
+      font-weight: 600;
+      background: rgba(96,165,250,0.2);
+      border: 1px solid rgba(96,165,250,0.3);
+      color: #93c5fd;
+      padding: 4px 12px;
+      border-radius: 4px;
+      white-space: nowrap;
+      margin-top: 2px;
+    }
+
+    /* ── Legend ── */
+    .legend {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      padding: 10px 18px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    .legend-title {
+      font-size: 0.65rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-right: 4px;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 0.68rem;
+      color: var(--text-mid);
+    }
+    .leg-swatch {
+      width: 28px; height: 10px;
+      border-radius: 2px;
+      flex-shrink: 0;
+    }
+    .leg-line {
+      width: 28px; height: 0;
+      border-top: 2px solid;
+      flex-shrink: 0;
+    }
+    .leg-line.solid  { border-color: #2563eb; }
+    .leg-line.dashed { border-color: #7c3aed; border-top-style: dashed; }
+    .leg-pk { background: #dbeafe; border: 1px solid #93c5fd; }
+    .leg-fk { background: #fef3c7; border: 1px solid #fcd34d; }
+    .leg-fact { background: #1a2b4a; }
+    .leg-dim  { background: #2563eb; }
+    .leg-ann  { background: #7c3aed; }
+    .leg-sep { width: 1px; height: 18px; background: var(--border); }
+
+    /* ── ERD canvas ── */
+    .erd-wrap {
+      position: relative;
+      width: 1252px;
+      height: 900px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      overflow: hidden;
+    }
+
+    /* dotted grid background */
+    .erd-wrap::before {
+      content: '';
+      position: absolute; inset: 0;
+      background-image: radial-gradient(circle, #c8d4e0 1px, transparent 1px);
+      background-size: 24px 24px;
+      opacity: 0.5;
+    }
+
+    /* SVG lines layer */
+    .erd-svg {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    /* ── Table boxes ── */
+    .tbl {
+      position: absolute;
+      background: var(--surface);
+      border-radius: 5px;
+      overflow: hidden;
+      box-shadow: 0 2px 10px rgba(26,43,74,0.1), 0 0 0 1px rgba(26,43,74,0.12);
+      z-index: 2;
+      min-width: 200px;
+    }
+
+    .tbl-head {
+      padding: 7px 12px;
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .tbl-head .tbl-type-badge {
+      font-size: 0.55rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      background: rgba(255,255,255,0.18);
+      border-radius: 2px;
+      padding: 1px 5px;
+      flex-shrink: 0;
+    }
+
+    .head-fact { background: var(--navy); }
+    .head-dim  { background: var(--blue); }
+    .head-ann  { background: var(--purple); }
+
+    .tbl-body { padding: 0; }
+
+    .col-row {
+      display: grid;
+      grid-template-columns: 28px 1fr auto;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 10px;
+      border-bottom: 1px solid #f0f2f5;
+      height: 22px;
+      transition: background 0.1s;
+    }
+    .col-row:last-child { border-bottom: none; }
+    .col-row:hover { background: #f7f8fb; }
+
+    .col-flag {
+      font-size: 0.58rem;
+      font-weight: 700;
+      text-align: center;
+      border-radius: 2px;
+      padding: 1px 3px;
+      letter-spacing: 0.03em;
+    }
+    .flag-pk { background: #dbeafe; color: #1d4ed8; }
+    .flag-fk { background: #fef3c7; color: #92400e; }
+    .flag-blank { opacity: 0; }
+
+    .col-name {
+      font-size: 0.68rem;
+      font-weight: 500;
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .col-name.pk { color: #1d4ed8; font-weight: 600; }
+    .col-name.fk { color: #92400e; }
+
+    .col-type {
+      font-size: 0.6rem;
+      color: var(--text-muted);
+      text-align: right;
+      white-space: nowrap;
+    }
+
+    /* ── Section note ── */
+    .schema-note {
+      margin-top: 16px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--blue);
+      border-radius: 4px;
+      padding: 12px 16px;
+      font-size: 0.72rem;
+      color: var(--text-mid);
+      line-height: 1.6;
+      max-width: 1252px;
+    }
+    .schema-note strong { color: var(--text); font-weight: 600; }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <!-- Page header -->
+  <div class="page-header">
+    <div>
+      <div class="ph-title">Star Schema ERD — Profitability Dashboard</div>
+      <div class="ph-sub">Data model supporting live chart commentary &nbsp;·&nbsp; <strong>Harshini, Tyler &amp; Jesse</strong> &nbsp;·&nbsp; Project Proposal FY 2026</div>
+    </div>
+    <div class="ph-badge">Constellation Schema</div>
+  </div>
+
+  <!-- Legend -->
+  <div class="legend">
+    <span class="legend-title">Legend</span>
+    <div class="legend-item"><span class="leg-swatch leg-fact"></span>Fact table</div>
+    <div class="legend-item"><span class="leg-swatch leg-dim"></span>Dimension table</div>
+    <div class="legend-item"><span class="leg-swatch leg-ann"></span>Annotation fact table</div>
+    <div class="leg-sep"></div>
+    <div class="legend-item"><span class="leg-swatch leg-pk"></span>Primary Key (PK)</div>
+    <div class="legend-item"><span class="leg-swatch leg-fk"></span>Foreign Key (FK)</div>
+    <div class="leg-sep"></div>
+    <div class="legend-item"><span class="leg-line solid"></span>FK relationship (1 : many)</div>
+    <div class="legend-item"><span class="leg-line dashed"></span>Shared dimension (annotation)</div>
+  </div>
+
+  <!-- ERD canvas -->
+  <div class="erd-wrap">
+
+    <!-- ══ SVG connector lines ══ -->
+    <svg class="erd-svg" viewBox="0 0 1252 900" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <!-- Arrow for FK end (fact side) -->
+        <marker id="arrow-blue" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+          <path d="M0,0 L0,6 L8,3 Z" fill="#2563eb" opacity="0.7"/>
+        </marker>
+        <!-- Circle for dim end (one side) -->
+        <marker id="circle-blue" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto">
+          <circle cx="3" cy="3" r="2.5" fill="#2563eb" opacity="0.7"/>
+        </marker>
+        <!-- Arrow for annotation FK -->
+        <marker id="arrow-purple" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+          <path d="M0,0 L0,6 L8,3 Z" fill="#7c3aed" opacity="0.6"/>
+        </marker>
+        <marker id="circle-purple" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto">
+          <circle cx="3" cy="3" r="2.5" fill="#7c3aed" opacity="0.6"/>
+        </marker>
+      </defs>
+
+      <!-- ── 1. DIM_DATE → FACT_FINANCIALS (vertical) ── -->
+      <path d="M615,226 V262"
+        fill="none" stroke="#2563eb" stroke-width="1.8" opacity="0.7"
+        marker-start="circle-blue" marker-end="url(#arrow-blue)"/>
+      <text x="622" y="247" font-family="Inter,sans-serif" font-size="9" fill="#2563eb" opacity="0.75">date_key</text>
+
+      <!-- ── 2. FACT_FINANCIALS → DIM_PERIOD (vertical) ── -->
+      <path d="M615,600 V650"
+        fill="none" stroke="#2563eb" stroke-width="1.8" opacity="0.7"
+        marker-start="url(#arrow-blue)" marker-end="circle-blue"/>
+      <text x="622" y="629" font-family="Inter,sans-serif" font-size="9" fill="#2563eb" opacity="0.75">period_key</text>
+
+      <!-- ── 3. DIM_KPI → FACT_FINANCIALS (elbow) ── -->
+      <path d="M277,338 H388 V430 H502"
+        fill="none" stroke="#2563eb" stroke-width="1.8" opacity="0.7"
+        marker-start="circle-blue" marker-end="url(#arrow-blue)"/>
+      <text x="290" y="331" font-family="Inter,sans-serif" font-size="9" fill="#2563eb" opacity="0.75">kpi_key</text>
+
+      <!-- ── 4. DIM_DEPARTMENT → FACT_FINANCIALS (elbow) ── -->
+      <path d="M1022,338 H880 V430 H732"
+        fill="none" stroke="#2563eb" stroke-width="1.8" opacity="0.7"
+        marker-start="circle-blue" marker-end="url(#arrow-blue)"/>
+      <text x="870" y="326" font-family="Inter,sans-serif" font-size="9" fill="#2563eb" opacity="0.75">department_key</text>
+
+      <!-- ── 5. DIM_SEGMENT → FACT_FINANCIALS (elbow) ── -->
+      <path d="M1022,718 H880 V520 H732"
+        fill="none" stroke="#2563eb" stroke-width="1.8" opacity="0.7"
+        marker-start="circle-blue" marker-end="url(#arrow-blue)"/>
+      <text x="840" y="710" font-family="Inter,sans-serif" font-size="9" fill="#2563eb" opacity="0.75">segment_key</text>
+
+      <!-- ── 6. FACT_ANNOTATIONS → DIM_DATE (dashed, outer-left route) ── -->
+      <path d="M52,648 H18 V18 H615 V226"
+        fill="none" stroke="#7c3aed" stroke-width="1.5" stroke-dasharray="5,4" opacity="0.6"
+        marker-start="url(#arrow-purple)" marker-end="circle-purple"/>
+      <text x="20" y="128" font-family="Inter,sans-serif" font-size="9" fill="#7c3aed" opacity="0.7" transform="rotate(-90,20,128)">date_key (shared)</text>
+
+      <!-- ── 7. FACT_ANNOTATIONS → DIM_DEPARTMENT (dashed, outer-right/bottom route) ── -->
+      <path d="M272,748 V876 H1238 V338 H1232"
+        fill="none" stroke="#7c3aed" stroke-width="1.5" stroke-dasharray="5,4" opacity="0.6"
+        marker-start="url(#arrow-purple)" marker-end="circle-purple"/>
+      <text x="1215" y="620" font-family="Inter,sans-serif" font-size="9" fill="#7c3aed" opacity="0.7" transform="rotate(90,1215,620)">department_key (shared)</text>
+
+      <!-- ── DIM_SEGMENT internal FK to DIM_DEPARTMENT (denorm note) ── -->
+      <path d="M1127,648 V440 H1127"
+        fill="none" stroke="#16a34a" stroke-width="1.2" stroke-dasharray="3,3" opacity="0.5"/>
+      <circle cx="1127" cy="440" r="3" fill="#16a34a" opacity="0.5"/>
+      <text x="1133" y="546" font-family="Inter,sans-serif" font-size="8.5" fill="#16a34a" opacity="0.65">dept FK</text>
+
+    </svg>
+
+    <!-- ══════════════════════════════════
+         FACT_FINANCIALS  (center)
+         left=502, top=262
+    ══════════════════════════════════ -->
+    <div class="tbl" style="left:502px; top:262px; width:230px;">
+      <div class="tbl-head head-fact">
+        FACT_FINANCIALS
+        <span class="tbl-type-badge">FACT</span>
+      </div>
+      <div class="tbl-body">
+        <div class="col-row"><span class="col-flag flag-pk">PK</span><span class="col-name pk">fact_id</span><span class="col-type">BIGINT</span></div>
+        <div class="col-row"><span class="col-flag flag-fk">FK</span><span class="col-name fk">date_key</span><span class="col-type">INT</span></div>
+        <div class="col-row"><span class="col-flag flag-fk">FK</span><span class="col-name fk">department_key</span><span class="col-type">INT</span></div>
+        <div class="col-row"><span class="col-flag flag-fk">FK</span><span class="col-name fk">segment_key</span><span class="col-type">INT</span></div>
+        <div class="col-row"><span class="col-flag flag-fk">FK</span><span class="col-name fk">period_key</span><span class="col-type">INT</span></div>
+        <div class="col-row"><span class="col-flag flag-fk">FK</span><span class="col-name fk">kpi_key</span><span class="col-type">INT</span></div>
+        <div class="col-row"><span class="col-flag flag-blank">–</span><span class="col-name">revenue</span><span class="col-type">DECIMAL(15,2)</span></div>
+        <div class="col-row"><span class="col-flag flag-blank">–</span><span class="col-name">cogs</span><span class="col-type">DECIMAL(15,2)</span></div>
+        <div class="col-row"><span class="col-flag flag-blank">–</span><span class="col-name">gross_profit</span><span class="col-type">DECIMAL(15,2)</span></div>
+        <div class="col-row"><span class="col-flag flag-blank">–</span><span class="col-name">gross_margin_pct</span><span class="col-type">DECIMAL(5,2)</span></div>
+        <div class="col-row"><span class="col-flag flag-blank">–</span><span class="col-name">operating_expenses</span><span class="col-type">DECIMAL(15,2)</span></div>
+        <div class="col-row"><span class="col-flag flag-blank">–</span><span class="col-name">ebitda</span><span class="col-type">DECIMAL(15,2)</span></div>
+        <div class="col-row"><span class="col-flag flag-blank">–</span><span class="col-name">net_profit</span><span class="col-type">DECIMAL(15,2)</span></div>
+        <div class="col-row"><span class="col-flag flag-blank">–</span><span class="col-name">net_margin_pct</span><span class="col-type">DECIMAL(5,2)</span></div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════
+         DIM_DATE  (top-center)
+         left=510, top=18
+    ══════════════════════════════════ -->
+    <div class="tbl" style="left:510px; top:18px; width:210px;">
+      <div class="tbl-head head-dim">
+        DIM_DATE
+        <span class="tbl-type-badge">DIM</span>
+      </div>
+      <div class="tbl-body">
+        <div class="col-row"><span class="col-flag flag-pk">PK</span><span class="col-name pk">date_key</span><span class="col-type">INT</span></div>
+        <div class="col-row"><span class="col-flag flag-blank">–</span><span class="col-name">full_date</span><span class="col-type">DATE</span></div>
+        <div class="col-row"><span class="col-flag flag-blank">–</span><span class="col-name">month_number</span><span class="col-type">TINYINT</span></div>
+        <div class="col-row"><span class="col-flag flag-blank">–</span><span class="col-name">month_name</span><span class="col-type">VARCHAR(10)</span></div>
+        <div class="col-row"><span class="col-flag flag-blank">–</span><span class="col-name">quarter</span><span class="col-type">CHAR(2)</span></div>
+        <div class="col-row"><span class="col-flag flag-blank">–</span><span class="col-name">fiscal_year</span><span class="col-type">CHAR(7)</span></div>
+        <div class="col-row"><span class="col-flag flag-blank">–</span><span class="col-name">fiscal_quarter</span><span class="col-type">CHAR(7)</span></div>
+        <div class="col-row"><span class="col-flag flag-blank">–</span><span class="col-name">is_month_end</span><span class="col-type">BOOLEAN</span></div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════
+         DIM_KPI  (left)
+         left=65, top=258
+    ══════════════════════════════════ -->
+    <div class="tbl" style="left:65px; top:258px; width:210px;">
+      <div class="tbl-head head-dim">
+        DIM_KPI
+        <span class="tbl-type-badge">DIM</span>
+      </div>
+      <div class="tbl-body">
+        <div class="col-row"><span class="col-flag flag-pk">PK</span><span class="col-name pk">kpi_key</span><span class="col-type">INT</span></div>
+        <div class="col-row"><span class="col-flag flag-blank">–</span><span class="col-name">kpi_name</span><span class="col-type">VARCHAR(50)</span></div>
+        <div class="col-row"><span class="col-flag flag-blank">–</span><span class="col-name">kpi_category</span><span class="col-type">VARCHAR(30)</span></div>
+        <div class="col-row"><span class="col-flag flag-blank">–</span><span class="col-name">unit</span><span class="col-type">VARCHAR(20)</span></div>
+        <div class="col-row"><span class="col-flag flag-blank">–</span><span class="col-name">display_format</span><span class="col-type">VARCHAR(20)</span></div>
+        <div class="col-row"><span class="col-flag flag-blank">–</span><span class="col-name">is_financial</span><span class="col-type">BOOLEAN</span></div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════
+         DIM_DEPARTMENT  (right)
+         left=1022, top=258
+    ══════════════════════════════════ -->
+    <div class="tbl" style="left:1022px; top:258px; width:210px;">
+      <div class="tbl-head head-dim">
+        DIM_DEPARTMENT
+        <span class="tbl-type-badge">DIM</span>
+      </div>
+      <div class="tbl-body">
+        <div class="col-row"><span class="col-flag flag-pk">PK</span><span class="col-name pk">department_key</span><span class="col-type">INT</span></div>
+        <div class="col-row"><span class="col-flag flag-blank">–</span><span class="col-name">department_name</span><span class="col-type">VARCHAR(50)</span></div>
+        <div class="col-row"><span class="col-flag flag-blank">–</span><span class="col-name">department_code</span><span class="col-type">CHAR(5)</span></div>
+        <div class="col-row"><span class="col-flag flag-blank">–</span><span class="col-name">department_head</span><span class="col-type">VARCHAR(100)</span></div>
+        <div class="col-row"><span class="col-flag flag-blank">–</span><span class="col-name">cost_center</span><span class="col-type">VARCHAR(20)</span></div>
+        <div class="col-row"><span class="col-flag flag-blank">–</span><span class="col-name">is_active</span><span class="col-type">BOOLEAN</span></div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════
+         DIM_PERIOD  (bottom-center)
+         left=505, top=650
+    ══════════════════════════════════ -->
+    <div class="tbl" style="left:505px; top:650px; width:210px;">
+      <div class="tbl-head head-dim">
+        DIM_PERIOD
+        <span class="tbl-type-badge">DIM</span>
+      </div>
+      <div class="tbl-body">
+        <div class="col-row"><span class="col-flag flag-pk">PK</span><span class="col-name pk">period_key</span><span class="col-type">INT</span></div>
+        <div class="col-row"><span class="col-flag flag-blank">–</span><span class="col-name">period_label</span><span class="col-type">VARCHAR(20)</span></div>
+        <div class="col-row"><span class="col-flag flag-blank">–</span><span class="col-name">period_type</span><span class="col-type">VARCHAR(10)</span></div>
+        <div class="col-row"><span class="col-flag flag-blank">–</span><span class="col-name">fiscal_year</span><span class="col-type">CHAR(7)</span></div>
+        <div class="col-row"><span class="col-flag flag-blank">–</span><span class="col-name">start_date</span><span class="col-type">DATE</span></div>
+        <div class="col-row"><span class="col-flag flag-blank">–</span><span class="col-name">end_date</span><span class="col-type">DATE</span></div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════
+         DIM_SEGMENT  (bottom-right)
+         left=1022, top=648
+    ══════════════════════════════════ -->
+    <div class="tbl" style="left:1022px; top:648px; width:210px;">
+      <div class="tbl-head head-dim">
+        DIM_SEGMENT
+        <span class="tbl-type-badge">DIM</span>
+      </div>
+      <div class="tbl-body">
+        <div class="col-row"><span class="col-flag flag-pk">PK</span><span class="col-name pk">segment_key</span><span class="col-type">INT</span></div>
+        <div class="col-row"><span class="col-flag flag-blank">–</span><span class="col-name">segment_name</span><span class="col-type">VARCHAR(50)</span></div>
+        <div class="col-row"><span class="col-flag flag-blank">–</span><span class="col-name">segment_type</span><span class="col-type">VARCHAR(30)</span></div>
+        <div class="col-row"><span class="col-flag flag-fk">FK</span><span class="col-name fk">department_key</span><span class="col-type">INT</span></div>
+        <div class="col-row"><span class="col-flag flag-blank">–</span><span class="col-name">margin_target_pct</span><span class="col-type">DECIMAL(5,2)</span></div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════
+         FACT_ANNOTATIONS  (bottom-left)
+         left=52, top=630
+    ══════════════════════════════════ -->
+    <div class="tbl" style="left:52px; top:630px; width:225px;">
+      <div class="tbl-head head-ann">
+        FACT_ANNOTATIONS
+        <span class="tbl-type-badge">FACT</span>
+      </div>
+      <div class="tbl-body">
+        <div class="col-row"><span class="col-flag flag-pk">PK</span><span class="col-name pk">annotation_key</span><span class="col-type">BIGINT</span></div>
+        <div class="col-row"><span class="col-flag flag-fk">FK</span><span class="col-name fk">date_key</span><span class="col-type">INT</span></div>
+        <div class="col-row"><span class="col-flag flag-fk">FK</span><span class="col-name fk">department_key</span><span class="col-type">INT</span></div>
+        <div class="col-row"><span class="col-flag flag-blank">–</span><span class="col-name">annotation_type</span><span class="col-type">VARCHAR(20)</span></div>
+        <div class="col-row"><span class="col-flag flag-blank">–</span><span class="col-name">badge_status</span><span class="col-type">VARCHAR(30)</span></div>
+        <div class="col-row"><span class="col-flag flag-blank">–</span><span class="col-name">title</span><span class="col-type">VARCHAR(100)</span></div>
+        <div class="col-row"><span class="col-flag flag-blank">–</span><span class="col-name">body_text</span><span class="col-type">TEXT</span></div>
+        <div class="col-row"><span class="col-flag flag-blank">–</span><span class="col-name">author</span><span class="col-type">VARCHAR(100)</span></div>
+        <div class="col-row"><span class="col-flag flag-blank">–</span><span class="col-name">created_at</span><span class="col-type">TIMESTAMP</span></div>
+      </div>
+    </div>
+
+  </div><!-- /erd-wrap -->
+
+  <!-- Schema note -->
+  <div class="schema-note">
+    <strong>Schema type: Constellation Schema</strong> — Two fact tables (<code>FACT_FINANCIALS</code> and <code>FACT_ANNOTATIONS</code>) share common dimension tables (<code>DIM_DATE</code>, <code>DIM_DEPARTMENT</code>), forming a constellation (galaxy) schema — an extension of the classic star schema.
+    <code>FACT_FINANCIALS</code> holds all profitability measures (revenue, COGS, gross profit, EBITDA, net profit).
+    <code>FACT_ANNOTATIONS</code> powers the live chart commentary panel — every comment is keyed to a date and department so it surfaces in the correct team filter view.
+    <code>DIM_SEGMENT</code> carries a self-referential FK to <code>DIM_DEPARTMENT</code>, allowing sub-department drill-down without fan-trap risk on the fact grain.
+  </div>
+
+</div>
+</body>
+</html>
