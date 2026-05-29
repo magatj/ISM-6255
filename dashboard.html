@@ -55,9 +55,9 @@
     ══════════════════════════════════ */
     header {
       grid-column: 1 / -1;
-      display: flex;
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
       align-items: center;
-      justify-content: space-between;
       padding: 0 20px;
       background: var(--navy);
       border-bottom: 1px solid rgba(255,255,255,0.08);
@@ -67,6 +67,10 @@
       display: flex;
       align-items: center;
       gap: 20px;
+    }
+
+    .header-center {
+      text-align: center;
     }
     .app-wordmark {
       font-size: 0.82rem;
@@ -88,6 +92,7 @@
     .header-right {
       display: flex;
       align-items: center;
+      justify-content: flex-end;
       gap: 16px;
       font-size: 0.72rem;
       color: rgba(255,255,255,0.45);
@@ -661,11 +666,10 @@
   <header>
     <div class="header-left">
       <div class="app-wordmark">6255 <span>TeamProject</span></div>
-      <div class="divider-v"></div>
-      <div>
-        <div class="view-label" style="font-size:1rem;font-weight:700;color:#ffffff;">Profitability Overview</div>
-        <div style="font-size:0.78rem;color:rgba(255,255,255,0.5);margin-top:2px;font-weight:400;">Harshini, Tyler &amp; Jesse</div>
-      </div>
+    </div>
+    <div class="header-center">
+      <div style="font-size:1.05rem;font-weight:700;color:#ffffff;letter-spacing:-0.01em;">Profitability Overview</div>
+      <div style="font-size:0.75rem;color:rgba(255,255,255,0.45);margin-top:3px;font-weight:400;">Harshini, Tyler &amp; Jesse</div>
     </div>
     <div class="header-right">
       <div class="period-pill">
