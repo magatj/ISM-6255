@@ -853,7 +853,7 @@
 
     <div class="exec-header">
       <div class="exec-title">Executive Summary</div>
-      <div class="exec-meta">Live chart commentary · <strong id="exec-team-label">All Business Units</strong> · FY 2026</div>
+      <div class="exec-meta">Live chart commentary · <strong id="exec-team-label">All Business Units</strong> · <span id="exec-period-label">FY 2026</span></div>
       <div style="margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.08);font-size:0.65rem;color:rgba(255,255,255,0.35);line-height:1.55;">
         This panel is the core of the proposal — analysts annotate charts in real time. Each entry references a specific chart and persists as a permanent record of decisions and risks.
       </div>
@@ -890,9 +890,9 @@
 
 <script>
 /* ═══════════════════════════════════
-   DATA BY TEAM
+   DATA BY TEAM & PERIOD
 ═══════════════════════════════════ */
-const TEAMS = {
+const FY2026 = {
   all: {
     label: 'All Business Units',
     kpi: { rev:'$8.4M', revD:'▲ 11.2%', revT:'up', gp:'$5.7M', gpD:'▲ 2.1 pp', gpT:'up', np:'$1.9M', npD:'▲ 8.5%', npT:'up', eb:'$2.6M', ebD:'▲ 9.1%', ebT:'up' },
@@ -1092,6 +1092,281 @@ const TEAMS = {
   },
 };
 
+const FY2025 = {
+  all: {
+    label: 'All Business Units',
+    kpi: { rev:'$7.6M', revD:'▲ 6.8%', revT:'up', gp:'$5.1M', gpD:'▲ 1.4 pp', gpT:'up', np:'$1.75M', npD:'▲ 5.2%', npT:'up', eb:'$2.38M', ebD:'▲ 7.1%', ebT:'up' },
+    sparkData: [
+      { name:'Sales',      val:'$2.7M', chg:'+8%',  up:true,  color:'#2563eb' },
+      { name:'Operations', val:'$2.0M', chg:'+5%',  up:true,  color:'#0891b2' },
+      { name:'Finance',    val:'$1.3M', chg:'+3%',  up:true,  color:'#16a34a' },
+      { name:'Marketing',  val:'$0.93M',chg:'+2%',  up:true,  color:'#d97706' },
+      { name:'IT',         val:'$0.49M',chg:'+4%',  up:true,  color:'#7c3aed' },
+      { name:'HR',         val:'$0.3M', chg:'+1%',  up:true,  color:'#db2777' },
+    ],
+    margins: [
+      { label:'Sales',       pct:58, color:'#2563eb' },
+      { label:'Operations',  pct:69, color:'#0891b2' },
+      { label:'Finance',     pct:76, color:'#16a34a' },
+      { label:'Marketing',   pct:48, color:'#d97706' },
+      { label:'IT',          pct:52, color:'#7c3aed' },
+    ],
+    summary: [
+      { icon:'📈', iconBg:'#eff4ff', title:'Revenue Performance', badge:'On Track', badgeClass:'badge-pos',
+        ref:'Revenue vs. COGS — Full Year',
+        findings:['Revenue grew 6.8% YoY to $7.6M, in line with the $7.5M annual target.','Sales and Operations drove 70% of total revenue growth, with all departments recording positive YoY results.'],
+        author:'CFO Office', date:'Dec 2025' },
+      { icon:'⚠️', iconBg:'#fffbeb', title:'Margin Improvement Needed', badge:'Watch', badgeClass:'badge-watch',
+        ref:'Gross Margin % — H2 trend',
+        findings:['Gross margin held steady at 67%, below the 70% target. Marketing and IT remain below segment benchmarks.','Investment in automation tooling approved for Q1 2026 to address operational cost drag.'],
+        author:'Finance', date:'Dec 2025' },
+      { icon:'✅', iconBg:'#f0fdf4', title:'Headcount Stabilised', badge:'Positive', badgeClass:'badge-pos',
+        ref:'Operating Expenses — monthly trend',
+        findings:['After two years of rapid headcount growth, FY 2025 saw net-zero hiring against a plan of +8 FTEs, reducing projected salary overspend by $210K.'],
+        author:'HR', date:'Dec 2025' },
+    ]
+  },
+  finance: {
+    label: 'Finance',
+    kpi: { rev:'$1.3M', revD:'▲ 3.8%', revT:'up', gp:'$990K', gpD:'▲ 0.9 pp', gpT:'up', np:'$591K', npD:'▲ 3.2%', npT:'up', eb:'$721K', ebD:'▲ 2.8%', ebT:'up' },
+    sparkData: [
+      { name:'Advisory',    val:'$477K', chg:'+6%',  up:true,  color:'#16a34a' },
+      { name:'Compliance',  val:'$398K', chg:'+2%',  up:true,  color:'#0891b2' },
+      { name:'Treasury',    val:'$290K', chg:'+1%',  up:true,  color:'#6366f1' },
+      { name:'Reporting',   val:'$135K', chg:'+3%',  up:true,  color:'#d97706' },
+    ],
+    margins: [
+      { label:'Advisory',   pct:71, color:'#16a34a' },
+      { label:'Compliance', pct:65, color:'#0891b2' },
+      { label:'Treasury',   pct:58, color:'#6366f1' },
+    ],
+    summary: [
+      { icon:'📊', iconBg:'#f0fdf4', title:'Finance Performance', badge:'On Track', badgeClass:'badge-pos',
+        ref:'Revenue vs. COGS — Finance unit',
+        findings:['Finance revenue grew 3.8% to $1.3M. Advisory services grew 6% through expanded client engagements.','Cost-to-income ratio was 58.2%, an improvement from 60.1% in FY 2024.'],
+        author:'CFO Office', date:'Dec 2025' },
+    ]
+  },
+  sales: {
+    label: 'Sales',
+    kpi: { rev:'$2.7M', revD:'▲ 8.3%', revT:'up', gp:'$1.64M', gpD:'▲ 2.1 pp', gpT:'up', np:'$701K', npD:'▲ 7.4%', npT:'up', eb:'$855K', ebD:'▲ 8.0%', ebT:'up' },
+    sparkData: [
+      { name:'Enterprise',  val:'$1.19M',chg:'+11%', up:true,  color:'#f59e0b' },
+      { name:'Mid-Market',  val:'$875K', chg:'+9%',  up:true,  color:'#2563eb' },
+      { name:'SMB',         val:'$420K', chg:'+4%',  up:true,  color:'#16a34a' },
+      { name:'Renewals',    val:'$206K', chg:'+2%',  up:true,  color:'#d97706' },
+    ],
+    margins: [
+      { label:'Enterprise', pct:68, color:'#f59e0b' },
+      { label:'Mid-Market', pct:59, color:'#2563eb' },
+      { label:'SMB',        pct:48, color:'#16a34a' },
+    ],
+    summary: [
+      { icon:'📈', iconBg:'#eff4ff', title:'Sales Growth', badge:'On Track', badgeClass:'badge-pos',
+        ref:'Revenue vs. COGS — Sales unit',
+        findings:['Sales revenue grew 8.3% to $2.7M. Enterprise segment was the standout, closing three new accounts worth a combined $310K ARR.'],
+        author:'Sales Director', date:'Dec 2025' },
+    ]
+  },
+  operations: {
+    label: 'Operations',
+    kpi: { rev:'$2.0M', revD:'▲ 6.4%', revT:'up', gp:'$1.45M', gpD:'▲ 1.2 pp', gpT:'up', np:'$476K', npD:'▲ 5.8%', npT:'up', eb:'$635K', ebD:'▲ 5.4%', ebT:'up' },
+    sparkData: [
+      { name:'Logistics',   val:'$809K', chg:'+8%',  up:true,  color:'#a78bfa' },
+      { name:'Procurement', val:'$679K', chg:'+5%',  up:true,  color:'#0891b2' },
+      { name:'Facilities',  val:'$340K', chg:'+3%',  up:true,  color:'#16a34a' },
+      { name:'Quality',     val:'$172K', chg:'+2%',  up:true,  color:'#f59e0b' },
+    ],
+    margins: [
+      { label:'Logistics',   pct:67, color:'#a78bfa' },
+      { label:'Procurement', pct:70, color:'#0891b2' },
+      { label:'Facilities',  pct:55, color:'#16a34a' },
+    ],
+    summary: [
+      { icon:'✅', iconBg:'#f0fdf4', title:'Operations Efficiency', badge:'Positive', badgeClass:'badge-pos',
+        ref:'Operating Expenses — monthly trend',
+        findings:['Operations revenue grew 6.4% with margin improvement of 1.2pp. Logistics route optimisation delivered $95K in cost savings.'],
+        author:'COO Office', date:'Dec 2025' },
+    ]
+  },
+  hr: {
+    label: 'HR',
+    kpi: { rev:'$0.3M', revD:'▲ 1.1%', revT:'up', gp:'$222K', gpD:'▲ 0.4 pp', gpT:'up', np:'$92K', npD:'▲ 0.9%', npT:'up', eb:'$122K', ebD:'▲ 1.0%', ebT:'up' },
+    sparkData: [
+      { name:'Recruitment', val:'$114K', chg:'+3%',  up:true,  color:'#fb7185' },
+      { name:'L&D',         val:'$98K',  chg:'+2%',  up:true,  color:'#d97706' },
+      { name:'Payroll Ops', val:'$88K',  chg:'+1%',  up:true,  color:'#7c3aed' },
+    ],
+    margins: [
+      { label:'Recruitment', pct:62, color:'#fb7185' },
+      { label:'L&D',         pct:58, color:'#d97706' },
+    ],
+    summary: [
+      { icon:'👥', iconBg:'#fff1f2', title:'Headcount Stable', badge:'On Track', badgeClass:'badge-pos',
+        ref:'HR Operating Expenses — FY 2025',
+        findings:['HR costs were 13.1% of total OpEx, within the approved 14% ceiling. Net-zero hiring preserved budget for planned FY 2026 expansion.'],
+        author:'CHRO Office', date:'Dec 2025' },
+    ]
+  },
+  it: {
+    label: 'IT',
+    kpi: { rev:'$0.49M', revD:'▲ 3.9%', revT:'up', gp:'$351K', gpD:'▲ 0.7 pp', gpT:'up', np:'$137K', npD:'▲ 2.8%', npT:'up', eb:'$186K', ebD:'▲ 3.1%', ebT:'up' },
+    sparkData: [
+      { name:'Infrastructure', val:'$202K', chg:'+4%',  up:true,  color:'#38bdf8' },
+      { name:'Software',       val:'$155K', chg:'+3%',  up:true,  color:'#7c3aed' },
+      { name:'Security',       val:'$133K', chg:'+5%',  up:true,  color:'#16a34a' },
+    ],
+    margins: [
+      { label:'Infrastructure', pct:50, color:'#38bdf8' },
+      { label:'Software',       pct:62, color:'#7c3aed' },
+    ],
+    summary: [
+      { icon:'🔒', iconBg:'#eff4ff', title:'IT Investment', badge:'On Track', badgeClass:'badge-pos',
+        ref:'IT Operating Expenses — FY 2025',
+        findings:['IT revenue grew 3.9%. Security spend increased 5% in response to new compliance requirements, offset by a cloud migration that reduced infrastructure costs by $22K.'],
+        author:'CTO Office', date:'Dec 2025' },
+    ]
+  },
+  marketing: {
+    label: 'Marketing',
+    kpi: { rev:'$0.93M', revD:'▲ 2.1%', revT:'up', gp:'$446K', gpD:'▲ 0.5 pp', gpT:'up', np:'$122K', npD:'▲ 1.7%', npT:'up', eb:'$173K', ebD:'▲ 2.0%', ebT:'up' },
+    sparkData: [
+      { name:'Digital',    val:'$396K', chg:'+5%',  up:true,  color:'#f97316' },
+      { name:'Events',     val:'$318K', chg:'+2%',  up:true,  color:'#d97706' },
+      { name:'Brand',      val:'$216K', chg:'-1%',  up:false, color:'#6366f1' },
+    ],
+    margins: [
+      { label:'Digital',  pct:46, color:'#f97316' },
+      { label:'Events',   pct:42, color:'#d97706' },
+      { label:'Brand',    pct:38, color:'#6366f1' },
+    ],
+    summary: [
+      { icon:'📣', iconBg:'#fff7ed', title:'Marketing Baseline', badge:'Watch', badgeClass:'badge-watch',
+        ref:'Marketing spend vs. pipeline contribution',
+        findings:['Marketing revenue grew a modest 2.1%. Event ROI was below target — a revised events strategy has been drafted for FY 2026 to improve attribution.'],
+        author:'CMO Office', date:'Dec 2025' },
+    ]
+  },
+};
+
+const Q4_2026 = {
+  all: {
+    label: 'All Business Units',
+    kpi: { rev:'$2.3M', revD:'▲ 12.4%', revT:'up', gp:'$1.6M', gpD:'▲ 2.3 pp', gpT:'up', np:'$530K', npD:'▲ 9.8%', npT:'up', eb:'$720K', ebD:'▲ 10.2%', ebT:'up' },
+    sparkData: [
+      { name:'Sales',      val:'$870K', chg:'+16%', up:true,  color:'#2563eb' },
+      { name:'Operations', val:'$615K', chg:'+9%',  up:true,  color:'#0891b2' },
+      { name:'Finance',    val:'$388K', chg:'+6%',  up:true,  color:'#16a34a' },
+      { name:'Marketing',  val:'$242K', chg:'-5%',  up:false, color:'#d97706' },
+      { name:'IT',         val:'$132K', chg:'+3%',  up:true,  color:'#7c3aed' },
+      { name:'HR',         val:'$53K',  chg:'-2%',  up:false, color:'#db2777' },
+    ],
+    margins: [
+      { label:'Sales',       pct:64, color:'#2563eb' },
+      { label:'Operations',  pct:72, color:'#0891b2' },
+      { label:'Finance',     pct:79, color:'#16a34a' },
+      { label:'Marketing',   pct:41, color:'#d97706' },
+      { label:'IT',          pct:56, color:'#7c3aed' },
+    ],
+    summary: [
+      { icon:'📈', iconBg:'#eff4ff', title:'Strong Q4 Close', badge:'On Track', badgeClass:'badge-pos',
+        ref:'Revenue vs. COGS — Q4 2026',
+        findings:['Q4 revenue of $2.3M was the strongest quarter of FY 2026, driven by year-end enterprise deal closures in Sales.','Gross margin improved 2.3pp quarter-over-quarter as fixed costs were absorbed over higher revenue.'],
+        author:'CFO Office', date:'Dec 2026' },
+      { icon:'⚠️', iconBg:'#fffbeb', title:'Marketing Decline', badge:'Watch', badgeClass:'badge-watch',
+        ref:'Marketing — Q4 spend vs. revenue',
+        findings:['Marketing revenue fell 5% in Q4 as holiday campaign spend increased without proportionate pipeline contribution. Attribution review scheduled for January.'],
+        author:'Finance', date:'Dec 2026' },
+    ]
+  },
+  finance: FY2026.finance,
+  sales: FY2026.sales,
+  operations: FY2026.operations,
+  hr: FY2026.hr,
+  it: FY2026.it,
+  marketing: FY2026.marketing,
+};
+
+const Q3_2026 = {
+  all: {
+    label: 'All Business Units',
+    kpi: { rev:'$2.1M', revD:'▲ 9.7%', revT:'up', gp:'$1.42M', gpD:'▲ 1.8 pp', gpT:'up', np:'$478K', npD:'▲ 7.9%', npT:'up', eb:'$655K', ebD:'▲ 8.5%', ebT:'up' },
+    sparkData: [
+      { name:'Sales',      val:'$792K', chg:'+12%', up:true,  color:'#2563eb' },
+      { name:'Operations', val:'$560K', chg:'+7%',  up:true,  color:'#0891b2' },
+      { name:'Finance',    val:'$352K', chg:'+4%',  up:true,  color:'#16a34a' },
+      { name:'Marketing',  val:'$231K', chg:'-2%',  up:false, color:'#d97706' },
+      { name:'IT',         val:'$123K', chg:'+2%',  up:true,  color:'#7c3aed' },
+      { name:'HR',         val:'$42K',  chg:'-1%',  up:false, color:'#db2777' },
+    ],
+    margins: [
+      { label:'Sales',       pct:61, color:'#2563eb' },
+      { label:'Operations',  pct:70, color:'#0891b2' },
+      { label:'Finance',     pct:77, color:'#16a34a' },
+      { label:'Marketing',   pct:43, color:'#d97706' },
+      { label:'IT',          pct:54, color:'#7c3aed' },
+    ],
+    summary: [
+      { icon:'📊', iconBg:'#eff4ff', title:'Q3 Solid Growth', badge:'On Track', badgeClass:'badge-pos',
+        ref:'Revenue vs. COGS — Q3 2026',
+        findings:['Q3 revenue grew 9.7% YoY to $2.1M. Sales enterprise pipeline conversion accelerated in September, setting up a strong Q4.'],
+        author:'CFO Office', date:'Sep 2026' },
+    ]
+  },
+  finance: FY2026.finance,
+  sales: FY2026.sales,
+  operations: FY2026.operations,
+  hr: FY2026.hr,
+  it: FY2026.it,
+  marketing: FY2026.marketing,
+};
+
+const YTD_2026 = {
+  all: {
+    label: 'All Business Units',
+    kpi: { rev:'$3.5M', revD:'▲ 10.8%', revT:'up', gp:'$2.38M', gpD:'▲ 2.0 pp', gpT:'up', np:'$792K', npD:'▲ 8.3%', npT:'up', eb:'$1.08M', ebD:'▲ 9.4%', ebT:'up' },
+    sparkData: [
+      { name:'Sales',      val:'$1.29M',chg:'+14%', up:true,  color:'#2563eb' },
+      { name:'Operations', val:'$917K', chg:'+8%',  up:true,  color:'#0891b2' },
+      { name:'Finance',    val:'$583K', chg:'+5%',  up:true,  color:'#16a34a' },
+      { name:'Marketing',  val:'$375K', chg:'-3%',  up:false, color:'#d97706' },
+      { name:'IT',         val:'$208K', chg:'+2%',  up:true,  color:'#7c3aed' },
+      { name:'HR',         val:'$125K', chg:'-1%',  up:false, color:'#db2777' },
+    ],
+    margins: [
+      { label:'Sales',       pct:62, color:'#2563eb' },
+      { label:'Operations',  pct:71, color:'#0891b2' },
+      { label:'Finance',     pct:78, color:'#16a34a' },
+      { label:'Marketing',   pct:43, color:'#d97706' },
+      { label:'IT',          pct:55, color:'#7c3aed' },
+    ],
+    summary: [
+      { icon:'📈', iconBg:'#eff4ff', title:'YTD On Track', badge:'On Track', badgeClass:'badge-pos',
+        ref:'Revenue vs. COGS — YTD 2026',
+        findings:['YTD revenue of $3.5M is tracking 10.8% above the same period last year and is on pace to meet the FY 2026 full-year target of $8.0M.'],
+        author:'CFO Office', date:'May 2026' },
+      { icon:'⚠️', iconBg:'#fffbeb', title:'Marketing Lag', badge:'Watch', badgeClass:'badge-watch',
+        ref:'Marketing — YTD spend vs. revenue',
+        findings:['Marketing is the only department tracking below prior year through May. Q3 campaign calendar has been restructured to improve H2 contribution.'],
+        author:'Finance', date:'May 2026' },
+    ]
+  },
+  finance: FY2026.finance,
+  sales: FY2026.sales,
+  operations: FY2026.operations,
+  hr: FY2026.hr,
+  it: FY2026.it,
+  marketing: FY2026.marketing,
+};
+
+const ALL_DATA = {
+  'FY 2026':  FY2026,
+  'FY 2025':  FY2025,
+  'Q4 2026':  Q4_2026,
+  'Q3 2026':  Q3_2026,
+  'YTD 2026': YTD_2026,
+};
+
 /* ═══════════════════════════════════
    CLOCK
 ═══════════════════════════════════ */
@@ -1135,9 +1410,17 @@ function rand(n, lo, hi) {
    RENDER TEAM DATA
 ═══════════════════════════════════ */
 let mainChartInst, mc1Inst, mc2Inst;
+let activePeriod = 'FY 2026';
+let activeTeam   = 'all';
 
-function renderTeam(teamKey) {
-  const d = TEAMS[teamKey];
+function renderTeam(teamKey, period) {
+  if (period)   activePeriod = period;
+  if (teamKey)  activeTeam   = teamKey;
+  const d = ALL_DATA[activePeriod][activeTeam];
+
+  /* Period & team labels */
+  document.getElementById('exec-period-label').textContent = activePeriod;
+  document.getElementById('chart-title').textContent = `Revenue vs. Cost of Goods Sold — ${activePeriod}`;
 
   /* KPIs */
   document.getElementById('kpi-rev').textContent  = d.kpi.rev;
@@ -1338,8 +1621,12 @@ document.querySelectorAll('.filter-tab').forEach(btn => {
   btn.addEventListener('click', () => {
     document.querySelectorAll('.filter-tab').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
-    renderTeam(btn.dataset.team);
+    renderTeam(btn.dataset.team, activePeriod);
   });
+});
+
+document.getElementById('periodSelect').addEventListener('change', function() {
+  renderTeam(activeTeam, this.value);
 });
 
 /* ═══════════════════════════════════
